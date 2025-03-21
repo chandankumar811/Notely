@@ -1,0 +1,128 @@
+import React, { useState, useEffect } from 'react';
+import { Link,useNavigate } from 'react-router-dom';
+import { MessageCircle, Phone, Star, Settings, SunMoon, Sun, Moon } from 'lucide-react';
+import Logo from './assets/LOGO.png';
+import GooleIcon from './assets/google.png';
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setUser } from './redux/slices/user/userSlice';
+
+const LandingPage = () => {
+  const [darkMode, setDarkMode] = useState(true);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme) {
+      setDarkMode(JSON.parse(savedTheme));
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setDarkMode((prevMode) => {
+      const newMode = !prevMode;
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      return newMode;
+    });
+  };
+
+  const themeClasses = {
+    container: darkMode ? 'bg-gray-900 text-white' : 'bg-[#f8faff] text-gray-700',
+    navbar: darkMode ? 'bg-gray-800' : 'bg-blue-600',
+    box: darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200',
+    themeIcon: darkMode ? 'text-yellow-300 bg-gray-700' : 'text-white bg-blue-500',
+  }
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const response = await axios.post('http://localhost:5000/api/auth/google-login',
+          { access_token: tokenResponse.access_token },
+          { withCredentials: true }
+        );
+        
+        console.log('Login Success:', response.data.user);
+        // setUser(response.data.user);
+        const data = response.data.user;
+        dispatch(setUser
+                ({
+                  userId: data.userId,
+                  name: data.name,
+                  email: data.email,
+                  avatar: data.avatar,
+                  isAuthenticated: true,
+                })
+              );
+        navigate('/chat');
+      } catch (error) {
+        console.error('Google login error:', error);
+      }
+    },
+    onError: (error) => console.log('Login Failed:', error)
+  });
+
+  return (
+    <div className={`min-h-screen ${themeClasses.container} flex flex-col items-center`}>
+      <header className={`h-16 mt-6 p-4 md:p-8 flex justify-between items-center w-[90%] md:max-w-6xl rounded-4xl ${themeClasses.navbar}`}>
+        <div className="flex items-center space-x-3">
+          <img src={Logo} alt="DuoChat Logo" className="w-8 h-8 md:w-10 md:h-10" />
+          <h1 className="text-xl md:text-3xl font-bold text-white">DuoChat</h1>
+        </div>
+        <nav className="space-x-6 flex items-center">
+          {/* <Link to='/signup' className={`hidden md:flex flex items-center ${darkMode?'text-gray-300 hover:text-white':'text-white'} px-4 py-1 font-semibold`}>Sign Up</Link> */}
+          <button onClick={googleLogin} className={`hidden md:flex items-center gap-1 text-gray-800 bg-white px-4 py-2 rounded-4xl font-semibold`}> <img src={GooleIcon} alt="G" className='w-5 h-5' /> Sign In</button>
+          <button 
+            onClick={toggleTheme} 
+            className={`p-2 rounded-full ${themeClasses.themeIcon}`}>
+                {darkMode ? <Sun size={22} /> : <Moon size={22} />}
+            </button>
+        </nav>
+      </header>
+      
+      <main className='w-full h-full my-15 flex flex-col items-center justify-center'>
+      <section className="flex flex-col items-center justify-center text-center px-6 mt-20">
+        <h2 className="text-5xl font-bold mb-4">Fast, Secure & Intuitive Messaging</h2>
+        <p className="text-gray-400 max-w-2xl mb-6">
+          Connect with friends and colleagues instantly using DuoChat. Experience real-time chat, seamless UI, and powerful features, all in one place.
+        </p>
+        <div className="flex flex-wrap justify-center gap-5 mt-10">
+            {/* <Link to='/signup' className={`flex md:hidden ${darkMode?'border-2 border-white':'border-2 border-blue-600 text-blue-600'} px-6 py-2 rounded-4xl font-semibold`}>Sign Up</Link> */}
+            <Link to='/signin' className={`flex items-center gap-1 md:hidden ${darkMode?'text-gray-900 bg-white':'text-white bg-blue-600'} px-6 py-2 rounded-4xl font-semibold `}><img src={GooleIcon} alt="G" className='w-5 h-5' /> Sign In</Link>
+            <Link to='/chat' className="bg-blue-600 px-6 py-2 text-white rounded-4xl text-lg font-semibold ">Start Chatting</Link>
+        </div>
+      </section>
+      
+      <section className="mt-30 w-full px-6 max-w-6xl">
+        <div className="w-full flex justify-center"><h3 className="text-3xl font-semibold mb-8 border-b-3 w-max">Features</h3></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+          <div className={`p-6 ${themeClasses.box} rounded-lg`}>
+            <MessageCircle size={32} className="mx-auto mb-4 text-blue-500" />
+            <h4 className="text-xl font-semibold">Instant Messaging</h4>
+            <p className="text-gray-400">Real-time chat with a clean and user-friendly interface.</p>
+          </div>
+          <div className={`p-6 ${themeClasses.box} rounded-lg`}>
+            <Phone size={32} className="mx-auto mb-4 text-green-500" />
+            <h4 className="text-xl font-semibold">Voice & Video Calls</h4>
+            <p className="text-gray-400">Seamless voice and video calling for better communication.</p>
+          </div>
+          <div className={`p-6 ${themeClasses.box} rounded-lg`}>
+            <Star size={32} className="mx-auto mb-4 text-yellow-500" />
+            <h4 className="text-xl font-semibold">Starred Chats</h4>
+            <p className="text-gray-400">Star and keep your most important chats separate.</p>
+          </div>
+          <div className={`p-6 ${themeClasses.box} rounded-lg`}>
+            <SunMoon size={32} className="mx-auto mb-4 text-red-500" />
+            <h4 className="text-xl font-semibold">Customizable Theme</h4>
+            <p className="text-gray-400">Light and dark mode options for better user experience.</p>
+          </div>
+        </div>
+      </section>
+      </main>
+    </div>
+  );
+};
+
+export default LandingPage;
