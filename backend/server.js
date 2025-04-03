@@ -7,23 +7,8 @@ const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const { ExpressPeerServer } = require("peer");
 
-// routes
-const googleLogin = require('./routes/googleLogin');
-const fetchUser = require('./routes/fetchUser');
-const userLogout = require('./routes/userLogout');
 
-const searchPeople = require('./routes/searchPeople');
-const requestPeople = require('./routes/requestPeople');
-const fetchRequests = require('./routes/fetchRequests');
-const acceptRequest = require('./routes/acceptRequest');
-const searchContact = require('./routes/searchContact');
 
-const addNewChat = require('./routes/addNewChat');
-const fetchChatList = require('./routes/fetchChatList');
-const fetchMessages = require('./routes/fetchMessages');
-const sendMessage = require('./routes/sendMessage');
-
-const path = require('path');
 
 const app = express();
 dotenv.config();
@@ -31,6 +16,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cookieParser());
+
+
 const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*" } });
 const peerServer = ExpressPeerServer(server, { debug: true });
@@ -47,12 +34,52 @@ app.use(cors({
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  connectTimeoutMS: 30000, 
-  serverSelectionTimeoutMS: 30000,
 }).then(() => console.log("MongoDB connected"))
 .catch(err => console.error(err));
 
+
+
+// routes
+const updateUserAvatar = require('./routes/user/updateUserAvatar');
+const updateUserDetail = require('./routes/user/updateUserDetail');
+
+const googleLogin = require('./routes/auth/googleLogin');
+const fetchUser = require('./routes/auth/fetchUser');
+const userLogout = require('./routes/auth/userLogout');
+
+const searchPeople = require('./routes/contact/searchPeople');
+const requestPeople = require('./routes/contact/requestPeople');
+const fetchRequests = require('./routes/contact/fetchRequests');
+const acceptRequest = require('./routes/contact/acceptRequest');
+const fetchContact = require('./routes/contact/fetchContact');
+const toggleBlockUser = require('./routes/contact/toggleBlockUser');
+const checkIsBlocked = require('./routes/contact/checkIsBlocked');
+const fetchBlockedContacts = require('./routes/contact/fetchBlockedContacts');
+
+const addNewChat = require('./routes/chat/addNewChat');
+const fetchChatList = require('./routes/chat/fetchChatList');
+const fetchMessages = require('./routes/chat/fetchMessages');
+const sendMessage = require('./routes/chat/sendMessage');
+const uploadFile = require('./routes/chat/uploadFile');
+const toggleStarChat = require('./routes/chat/toggleStarChat');
+const deleteChat = require('./routes/chat/deleteChat');
+
+const storeCallHistory = require('./routes/call/storeCallHistory');
+const fetchCallHistory = require('./routes/call/fetchCallHistory');
+const deleteCallHistory = require('./routes/call/deleteCallHistory');
+const deleteAllCallHistory = require('./routes/call/deleteAllCallHistory');
+
+const path = require('path');
+const authMiddleware = require('./middlewares/authMiddleware');
+
+
+
+
+
 // api Routes
+app.use('/api/user', updateUserAvatar);
+app.use('/api/user', updateUserDetail);
+
 app.use('/api/auth', googleLogin);
 app.use('/api/auth', fetchUser);
 app.use('/api/auth', userLogout);
@@ -61,12 +88,23 @@ app.use('/api/contact', searchPeople);
 app.use('/api/contact', requestPeople);
 app.use('/api/contact', fetchRequests);
 app.use('/api/contact', acceptRequest);
-app.use('/api/contact', searchContact);
+app.use('/api/contact', fetchContact);
+app.use('/api/contact', toggleBlockUser);
+app.use('/api/contact', checkIsBlocked);
+app.use('/api/contact', fetchBlockedContacts);
 
 app.use('/api/chat', addNewChat);
 app.use('/api/chat', fetchChatList);
 app.use('/api/chat', fetchMessages);
 app.use('/api/chat', sendMessage);
+app.use('/api/chat', uploadFile);
+app.use('/api/chat', toggleStarChat);
+app.use('/api/chat', deleteChat);
+
+app.use('/api/call', storeCallHistory);
+app.use('/api/call', fetchCallHistory);
+app.use('/api/call', deleteCallHistory);
+app.use('/api/call', deleteAllCallHistory);
 
 
 
@@ -80,41 +118,35 @@ io.on("connection", (socket) => {
     userSocketMap.set(userId, socket.id);
     console.log("User mapped:", userId, "to socket:", socket.id);
   });
+
+  socket.on('update-request-list',({contactId})=>{
+    const contactSocketId = userSocketMap.get(contactId);
+    console.log('requested')
+    if (contactSocketId) {
+      io.to(contactSocketId).emit("update-request-list");
+    }
+  })
+
+  // socket.on('notify-blocked-user',({userId,peerId,hasBlocked})=>{
+  //   const receiverSocketId = userSocketMap.get(peerId);
+  //   if(receiverSocketId){
+  //     io.to(receiverSocketId).emit('blocked-by-user',{userId,hasBlocked})
+  //   }
+  // })
   
-  socket.on("new-message", ({ receiverId, message }) => {
+  socket.on("new-message", ({ senderId, receiverId, message ,lastMessage}) => {
     const receiverSocketId = userSocketMap.get(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("received-message", { message });
+      io.to(receiverSocketId).emit("received-message", {senderId, message,lastMessage });
     }
   });
   
-  socket.on('update-receiver-media', ({ callerId, micStatus, videoStatus }) => {
-    const callerSocketId = userSocketMap.get(callerId);
-    if (callerSocketId) {
-      io.to(callerSocketId).emit('update-receiver-media-status', { micStatus, videoStatus });
-    }
-  });
   
   socket.on('update-media-status', ({ receiverId, micStatus, videoStatus }) => {
     const receiverSocketId = userSocketMap.get(receiverId);
+    console.log(receiverId, receiverSocketId,socket.id)
     if (receiverSocketId) {
       io.to(receiverSocketId).emit('update-receiver-media-status', { micStatus, videoStatus });
-    }
-  });
-  
-  // Call signaling
-  socket.on('call-user', ({ receiverId, callerId, callType }) => {
-    const receiverSocketId = userSocketMap.get(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('incoming-call', { callerId, callType });
-    } else {
-      // If receiver is not online, notify caller
-      const callerSocketId = userSocketMap.get(callerId);
-      if (callerSocketId) {
-        io.to(callerSocketId).emit('call-rejected', { 
-          reason: 'User is offline'
-        });
-      }
     }
   });
   
@@ -124,42 +156,41 @@ io.on("connection", (socket) => {
       io.to(callerSocketId).emit('call-accepted');
     }
   });
+
+  // Example socket events for call management
+socket.on('reject-call', ({callerId}) => {
+  const callerSocketId = userSocketMap.get(callerId);
+  io.to(callerSocketId).emit('call-rejected');
+});
+
+socket.on('cancel-call', ({receiverId}) => {
+  const receiverSocketId = userSocketMap.get(receiverId);
+  if(receiverSocketId){
+  io.to(receiverSocketId).emit('call-cancelled');
+}
+});
+
+socket.on('hangup-call', ({receiverId}) => {
+  const receiverSocketId = userSocketMap.get(receiverId);
+  if(receiverSocketId){
+  io.to(receiverSocketId).emit('call-ended');
+  }
+});
+socket.on('timeout-call', ({receiverId}) => {
+  const receiverSocketId = userSocketMap.get(receiverId);
+  if(receiverSocketId){
+  io.to(receiverSocketId).emit('call-timedout');
+  }
+});
+
+// socket.on('update-media-status', (data) => {
+//   // Broadcast media status changes to the other party
+//   socket.to(data.receiverId).emit('update-receiver-media-status', {
+//     micStatus: data.micStatus,
+//     videoStatus: data.videoStatus
+//   });
+// });
   
-  socket.on('call-rejected', ({ callerId, receiverId, reason }) => {
-    const callerSocketId = userSocketMap.get(callerId);
-    if (callerSocketId) {
-      io.to(callerSocketId).emit('call-rejected', { receiverId, reason });
-    }
-  });
-  
-  socket.on('call-ended', ({ peerId, userId }) => {
-    const peerSocketId = userSocketMap.get(peerId);
-    if (peerSocketId) {
-      io.to(peerSocketId).emit('call-ended', { userId });
-    }
-  });
-  
-  // PeerJS signaling (optional if using PeerJS server separately)
-  socket.on('relay-signal', ({ peerId, signal }) => {
-    const peerSocketId = userSocketMap.get(peerId);
-    if (peerSocketId) {
-      io.to(peerSocketId).emit('signal-received', { 
-        signal,
-        from: socket.id
-      });
-    }
-  });
-  
-  // Handle user typing indicators
-  socket.on('typing', ({ receiverId, isTyping }) => {
-    const receiverSocketId = userSocketMap.get(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('typing-status', {
-        userId: socket.id,
-        isTyping
-      });
-    }
-  });
   
   // Handle user presence and online status
   socket.on('set-status', ({ userId, status }) => {
@@ -186,6 +217,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use("/files",express.static(path.join(__dirname, 'files')));
+app.use("/files",authMiddleware,express.static(path.join(__dirname, 'files')));
 
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
