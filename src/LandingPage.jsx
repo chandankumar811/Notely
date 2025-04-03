@@ -1,33 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
-import { MessageCircle, Phone, Star, Settings, SunMoon, Sun, Moon } from 'lucide-react';
+import { MessageCircle, Phone, Star, Settings, SunMoon, Sun, Moon, X } from 'lucide-react';
 import Logo from './assets/LOGO.png';
 import GooleIcon from './assets/google.png';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setUser } from './redux/slices/user/userSlice';
+import {useTheme} from './contexts/ThemeContext';
 
 const LandingPage = () => {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode,toggleTheme} = useTheme()
+  const [loginPopup, setLoginPopup] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('darkMode');
-    if (savedTheme) {
-      setDarkMode(JSON.parse(savedTheme));
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    setDarkMode((prevMode) => {
-      const newMode = !prevMode;
-      localStorage.setItem('darkMode', JSON.stringify(newMode));
-      return newMode;
-    });
-  };
 
   const themeClasses = {
     container: darkMode ? 'bg-gray-900 text-white' : 'bg-[#f8faff] text-gray-700',
@@ -64,8 +52,9 @@ const LandingPage = () => {
     onError: (error) => console.log('Login Failed:', error)
   });
 
+
   return (
-    <div className={`min-h-screen ${themeClasses.container} flex flex-col items-center`}>
+    <div className={`min-h-screen ${themeClasses.container} flex flex-col items-center ${loginPopup ? 'overflow-hidden' : ''}`}>
       <header className={`h-16 mt-6 p-4 md:p-8 flex justify-between items-center w-[90%] md:max-w-6xl rounded-4xl ${themeClasses.navbar}`}>
         <div className="flex items-center space-x-3">
           <img src={Logo} alt="DuoChat Logo" className="w-8 h-8 md:w-10 md:h-10" />
@@ -90,8 +79,8 @@ const LandingPage = () => {
         </p>
         <div className="flex flex-wrap justify-center gap-5 mt-10">
             {/* <Link to='/signup' className={`flex md:hidden ${darkMode?'border-2 border-white':'border-2 border-blue-600 text-blue-600'} px-6 py-2 rounded-4xl font-semibold`}>Sign Up</Link> */}
-            <Link to='/signin' className={`flex items-center gap-1 md:hidden ${darkMode?'text-gray-900 bg-white':'text-white bg-blue-600'} px-6 py-2 rounded-4xl font-semibold `}><img src={GooleIcon} alt="G" className='w-5 h-5' /> Sign In</Link>
-            <Link to='/chat' className="bg-blue-600 px-6 py-2 text-white rounded-4xl text-lg font-semibold ">Start Chatting</Link>
+            <button onClick={googleLogin} className={`flex md:hidden items-center gap-1 text-gray-800 bg-white px-4 py-2 rounded-4xl font-semibold`}> <img src={GooleIcon} alt="G" className='w-5 h-5' /> Sign In</button>
+            <button onClick={()=>setLoginPopup(true)} className="bg-blue-600 px-6 py-2 text-white rounded-4xl text-lg font-semibold ">Start Chatting</button>
         </div>
       </section>
       
@@ -121,6 +110,28 @@ const LandingPage = () => {
         </div>
       </section>
       </main>
+
+      {loginPopup &&
+      <div className="fixed w-full h-full inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.8)]">
+          <div className={`${themeClasses.loginPopup} rounded-lg shadow-lg w-[95%] sm:w-[400px] bg-white text-gray-800`}>
+              <div className="flex items-center justify-between p-5 border-b border-gray-300">
+                  <div className="flex gap-3 items-center">
+                    <img src={GooleIcon} alt="G" className='w-6 h-6'/>
+                    <span className="">Sign in with Google</span>
+                  </div>
+                  <button className="text-gray-700 hover:bg-black/5 p-1 rounded-full" onClick={()=>setLoginPopup(false)}><X size={20} /></button>
+              </div>
+              <div className="p-5">
+                <h1 className="text-xl md:text-[28px] font-semibold">Use your Google Account to sign in to DuoChat</h1>
+                <div className="flex items-center">
+                  <p className="flex-1 text-[14px] md:text-[16px]">No more passwords to remember. Signing in is fast, simple and secure.</p>
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-500 p-3 rounded-full"><img src={Logo} alt="DuoChat" className="w-full h-full" /></div>
+                </div>
+                <button onClick={googleLogin} className={`w-full mt-6 flex justify-center bg-blue-600 text-white px-4 py-2 rounded-4xl font-semibold`}>Continue</button>
+              </div>
+          </div>
+      </div>
+    } 
     </div>
   );
 };

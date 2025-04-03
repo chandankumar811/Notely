@@ -40,6 +40,8 @@ function App() {
         name: data.name,
         email: data.email,
         avatar: data.avatar,
+        phoneNumber:data.phoneNumber,
+        address:data.address
       }));
     }
     setLoading(false);

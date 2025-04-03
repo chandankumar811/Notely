@@ -4,7 +4,7 @@ export const getThemeClasses = (darkMode) => ({
     navSidebar: darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200',
     chatHeader: darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
     chatArea: darkMode ? 'bg-gray-900' : 'bg-[#f8faff]',
-    searchBar: darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700',
+    searchBar: darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700',
     chatContact: darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200',
     chatContactActive: darkMode ? 'bg-gray-700' : 'bg-gray-200',
     messageInput: darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800',

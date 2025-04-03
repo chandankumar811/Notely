@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useChat } from '../../../contexts/ChatContext';
 import { getThemeClasses } from '../../../utils/theme';
 import ChatListItem from './ChatListItem';
 import { ArrowLeft, X } from 'lucide-react';
@@ -10,11 +11,13 @@ import { setSelectedChat,setChatList, updateChatList } from '../../../redux/slic
 
 const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpen,setAddNewChatOpen,contactsearchInputRef}) => {
   const { darkMode } = useTheme();
+  const {socket} = useChat();
   const themeClasses = getThemeClasses(darkMode);
 
   const [activeList, setActiveList] = useState('chatList');
   const [contactRequests,setContactRequests] = useState([])
   const [contactResult, setContactResult] = useState([]);
+  const [filteredContact, setFilteredContact] = useState([]);
   const chatList = useSelector(state => state.chat.chatList);
   const [contactSearchQuery, setContactSearchQuery] = useState('');
   
@@ -26,7 +29,6 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
   const chat = useSelector((state) => state.chat.selectedChat);
   const dispatch = useDispatch();
 
-  useEffect(()=>{
   const fetchRequests = async () => {
     try {
         const { data } = await axios.get(`http://localhost:5000/api/contact/get-requests/${userId}`);
@@ -36,6 +38,7 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
             console.error("Search failed:", error);
       }
   }
+  useEffect(()=>{
   fetchRequests();
   },[]);
 
@@ -81,28 +84,49 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
       return () => clearTimeout(delayDebounce);
     }, [searchQuery]); 
 
-    const searchContact = async () => {
-            if (!contactSearchQuery.trim()) {
-              setContactResult([]);
-              return
-            };
-                try {
-                    const { data } = await axios.get(`http://localhost:5000/api/contact/search-contact/${userId}?query=${contactSearchQuery}`);
-                    setContactResult(data);
-                    console.log(data);
-                } catch (error) {
-                    console.error("Search failed:", error);
-                }
-          }
+    
           
         
           useEffect(() => {
+            const fetchContact = async () => {
+              try {
+                const response = await axios.get(
+                  `http://localhost:5000/api/contact/fetch-contact/${userId}`
+                );
+                if(response.status===200){
+                  setContactResult(response.data);
+                // setFilteredContact(data);
+                console.log(response.data);
+                }
+                
+              } catch (error) {
+                console.error("Search failed:", error);
+              }
+            };
+
+            fetchContact();
+          }, []); 
+
+          const searchContact = () =>{
+            if(!contactSearchQuery.trim()) {
+              setFilteredContact(contactResult);
+              return
+            }
+            const filteredContact = contactResult.filter(
+              (contact) =>
+                contact.name.toLowerCase().includes(contactSearchQuery.toLowerCase()) ||
+                contact.email.toLowerCase().includes(contactSearchQuery.toLowerCase())
+            );
+            setFilteredContact(filteredContact);
+
+          }
+          useEffect(()=>{
             const delayDebounce = setTimeout(() => {
               searchContact();
             }, 500); 
         
             return () => clearTimeout(delayDebounce);
-          }, [contactSearchQuery]); 
+          },[contactSearchQuery]);
   
     const requestPeople = async (contactId) => {
       try {
@@ -111,6 +135,7 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
         });
         if(response.status===200){
           console.log("requested",contactId)
+          socket.emit('update-request-list',({contactId}))
         }
     } catch (error) {
         console.error("Search failed:", error);
@@ -160,11 +185,13 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
       closeAddNewChat();
     }
 
+    
 
     useEffect(()=>{
       const fetchChatList = async () => {
+        const size = 'all'
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/chat/get-chats/${userId}`);
+            const { data } = await axios.get(`http://localhost:5000/api/chat/get-chats/${userId}/${size}`);
             console.log(data);
             dispatch(setChatList(data));
           } catch (error) {
@@ -172,7 +199,15 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
           }
       }
       if (userId) fetchChatList();
-}, [userId, dispatch]);
+    }, [userId, dispatch]);
+
+    useEffect(()=>{
+      socket.on('update-request-list',fetchRequests);
+
+      return ()=>{
+        socket.off('update-request-list')
+      }
+    }, [socket]);
 
   return (
 
@@ -186,10 +221,14 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
       </div>
     </div>
       
-    <div className="overflow-y-auto h-[calc(100vh-10rem)] pb-10">
-      {activeList==='chatList' && chatList.map((chat) => (
+    <div className="overflow-y-auto h-[calc(100vh-15rem)] md:h-[calc(100vh-10rem)] pb-10">
+      {activeList==='chatList' && (chatList.length > 0 ? chatList.map((chat) => (
         <ChatListItem key={chat._id} chat={chat} selectChat={selectChat}/>
-      ))}
+      )):
+      <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 `}>
+        <span className={`${darkMode?'text-gray-400':'text-gray-600'}`}>No Chats Found!!!</span>
+      </div>
+    )}
       {activeList==='requestList' && contactRequests.map((contact) => (
         <ContactRequestItem key={contact._id} contact={contact} acceptRequest={acceptRequest}/>
       ))}
@@ -220,7 +259,7 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
                   <div key={user._id}  className={`flex items-center justify-between p-4 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                     <div className="flex items-center">
                     <div className={`w-12 h-12 rounded-full ${themeClasses.contactInitialBg} flex items-center justify-center font-bold`}>
-                    <img src={user.avatar} alt={name.charAt(0).toUpperCase()} className='rounded-full'/>
+                    <img src={user.avatar} alt={name.charAt(0).toUpperCase()} className='w-full h-full object-cover rounded-full'/>
                     </div>
                     <div className="ml-3 flex flex-col">
                       <span className="font-semibold text-base">{user.name}</span>
@@ -260,11 +299,11 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
               </div>
     
               {contactResult.length>0 ? <div className="overflow-y-auto h-[calc(100vh-10rem)] pb-10 mt-10">
-                {contactResult.map((contact) => (
+                {(!contactSearchQuery.trim()?contactResult:filteredContact).map((contact) => (
                   <div key={contact._id} onClick={()=>selectChatContact(contact)} className={`flex items-center justify-between p-4 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                   <div className="flex items-center">
                   <div className={`w-12 h-12 rounded-full ${themeClasses.contactInitialBg} flex items-center justify-center font-bold`}>
-                  <img src={contact.avatar} alt={contact.name.charAt(0).toUpperCase()} className='rounded-full'/>
+                  <img src={contact.avatar} alt={contact.name.charAt(0).toUpperCase()} className='w-full h-full object-cover rounded-full'/>
                   </div>
                   <div className="ml-3 flex flex-col">
                     <span className="font-semibold text-base">{contact.name}</span>

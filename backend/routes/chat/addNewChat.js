@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User"); 
-const Chat = require("../models/Chat"); 
+const User = require("../../models/User"); 
+const Chat = require("../../models/Chat"); 
 
 // Search users by name or email
 router.post("/new-chat", async (req, res) => {

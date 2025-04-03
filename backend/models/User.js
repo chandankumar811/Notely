@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    address:{
+        type: String,
+        required:false
+    },
     contacts: [{
         type: String,
         ref: 'User'
@@ -40,10 +44,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         ref: 'User'
     }],
-    starChats: [{
-        type: String,
-        ref: 'User'
-    }]
 }, {
     timestamps: true
 });

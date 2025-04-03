@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User"); 
+const User = require("../../models/User"); 
 
 // Search users by name or email
 router.get("/new/people/:userId", async (req, res) => {

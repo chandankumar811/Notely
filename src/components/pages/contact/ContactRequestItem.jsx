@@ -11,7 +11,7 @@ const ContactRequestItem = ({contact,acceptRequest}) => {
       <div key={contact._id}  className={`flex items-center justify-between p-4 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                 <div className="flex items-center">
                 <div className={`w-12 h-12 rounded-full ${themeClasses.contactInitialBg} flex items-center justify-center font-bold`}>
-                <img src={contact.avatar} alt={contact.name.charAt(0).toUpperCase()} className='rounded-full'/>
+                <img src={contact.avatar} alt={contact.name.charAt(0).toUpperCase()} className='w-full h-full object-cover rounded-full'/>
                 </div>
                 <div className="ml-3 flex flex-col">
                   <span className="font-semibold text-base">{contact.name}</span>

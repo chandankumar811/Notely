@@ -1,21 +1,32 @@
-import React from 'react';
-import { MessageCircle, Phone, Star, Settings, User, MessageSquareText } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { MessageCircle, Phone, Star, Settings, User, MessageSquareText, Moon, Sun, UserRound, LogOut } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getThemeClasses } from '../../utils/theme';
 import Logo from '../../assets/LOGO.png';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch,useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/user/userSlice';
+import ThemeButton from './ThemeButton';
+import { setSelectedChat } from '../../redux/slices/chat/chatSlice';
 
-const NavSidebar = () => {
+const NavSidebar = ({setCurrentSideBar,currentSideBar}) => {
   const { darkMode ,toggleTheme} = useTheme();
   const themeClasses = getThemeClasses(darkMode);
+
+  const [isProfileOption,setIsProfileOption] = useState(false)
+  const [imageError,setImageError] = useState(false)
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const name = useSelector((state) => state.user.name);
   const avatar = useSelector((state) => state.user.avatar);
+
+  useEffect(()=>{
+    if(currentSideBar){
+      setIsProfileOption(false)
+    }
+  },[currentSideBar])
 
   const handleLogout = async () => {
     try {
@@ -38,45 +49,39 @@ const NavSidebar = () => {
       
       {/* Navigation icons */}
       <div className="flex flex-col items-center space-y-8 flex-1">
-        <button className={`p-2 rounded-full ${themeClasses.navIconActive}`}>
+        <button onClick={()=>setCurrentSideBar('chatList')} className={`p-2 rounded-full ${currentSideBar==='chatList'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <MessageSquareText size={24} />
         </button>
-        <button className={`p-2 rounded-full ${themeClasses.navIcon}`}>
+        <button onClick={()=>setCurrentSideBar('callHistory')} className={`p-2 rounded-full ${currentSideBar==='callHistory'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Phone size={24} />
         </button>
-        <button className={`p-2 rounded-full ${themeClasses.navIcon}`}>
+        <button onClick={()=>setCurrentSideBar('starChats')} className={`p-2 rounded-full ${currentSideBar==='starChats'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Star size={24} />
         </button>
-        <button className={`p-2 rounded-full ${themeClasses.navIcon}`}>
+        {/* <button className={`p-2 rounded-full ${currentSideBar==='settings'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Settings size={24} />
-        </button>
+        </button> */}
       </div>
       
       {/* Theme toggle switch */}
-      <div className="mt-auto mb-4">
-        {/* <button 
-                onClick={toggleTheme} 
-                className={`p-2 rounded-full ${themeClasses.themeIcon}`}
-              >
-                {darkMode ? <Sun size={22} /> : <Moon size={22} />}
-              </button> */}
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                value="" 
-                className="sr-only peer" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className={`w-11 h-6 ${darkMode ? 'bg-blue-600' : 'bg-gray-200'} peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
-            </label>
+      <div className="">
+        <ThemeButton toggleTheme={toggleTheme} darkMode={darkMode}/>
       </div>
       
       {/* User profile */}
-      <div className="mt-4">
-        <div onClick={handleLogout} className={`w-10 h-10 rounded-full ${themeClasses.initialBg} flex items-center justify-center`}>
-          <img src={avatar} alt={name.charAt(0).toUpperCase()} className='rounded-full'/>
-        </div>
+      <div className="relative mt-4">
+        <button onClick={()=>setIsProfileOption(prev => !prev)} className={`w-10 h-10 rounded-full ${themeClasses.initialBg} flex items-center justify-center`}>
+          {imageError ? (
+                      <UserRound size={20} className="text-gray-500" /> // Lucide icon fallback
+                    ) : (
+                    <img src={avatar} alt={name.charAt(0).toUpperCase()} onError={()=>setImageError(true)} className='w-full h-full object-cover rounded-full'/>
+                    )}
+        </button>
+        {isProfileOption && 
+          <div className={`absolute z-10 left-[120%] bottom-2 mt-2 px-2 py-2 flex flex-col ${themeClasses.chatHeader} shadow-md border rounded-md w-max`}>
+            <button onClick={()=>{setCurrentSideBar('userProfile');setIsProfileOption(false)}} className={`flex items-center gap-2 px-2 py-1 ${darkMode?'hover:bg-gray-700':'hover:bg-gray-200'} rounded-md `}><UserRound size={18}/>Profile</button>
+            <button onClick={handleLogout} className={`flex items-center gap-2 px-2 py-1 ${darkMode?'hover:bg-gray-700':'hover:bg-gray-200'} rounded-md`}><LogOut size={18}/>Logout</button>
+          </div>}
       </div>
     </div>
   );

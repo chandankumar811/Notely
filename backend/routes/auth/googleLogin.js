@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router();
-const User = require('../models/User');
+const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
@@ -35,6 +35,7 @@ router.post('/google-login', async (req, res) => {
         avatar: userInfo.picture,
         googleId: userInfo.id,
         phoneNumber: '',
+        address:''
       });
       await user.save();
     }
@@ -45,7 +46,7 @@ router.post('/google-login', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId:user.userId, email: userInfo.email, name: userInfo.name, avatar: userInfo.picture },
+      { userId:user.userId, email: userInfo.email, name: userInfo.name, avatar: userInfo.picture, phoneNumber:userData.phoneNumber,address:userData.address },
       process.env.JWT_SECRET,
       { expiresIn: '7d' } // 1-week session
     );
@@ -63,7 +64,10 @@ router.post('/google-login', async (req, res) => {
         userId:userData.userId,
         name: userData.name,
         email: userData.email,
-        avatar: userData.avatar,} });
+        avatar: userData.avatar,
+        phoneNumber:userData.phoneNumber,
+        address:userData.address 
+      } });
 
   } catch (error) {
     console.error('Google OAuth error:', error);
