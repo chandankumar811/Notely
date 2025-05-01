@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Logo from "./assets/notely-logo.png";
 import GoogleIcon from "./assets/google.png";
 import { useTheme } from "./contexts/ThemeContext.jsx";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
 import {
   MessageCircle,
   Phone,
@@ -13,10 +15,13 @@ import {
   X,
   NotebookPen,
 } from "lucide-react";
+import { data, useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
   const { darkMode, toggleTheme } = useTheme();
   const [loginPopup, setLoginPopup] = useState();
+  const dispatch = useDispatch();
+  const navigate = useNavigate()
 
   const themeClasses = {
     container: darkMode
@@ -28,6 +33,34 @@ const LandingPage = () => {
       ? "text-yellow-300 bg-gray-700"
       : "text-white bg-blue-500",
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const response = await axios.post('http://localhost:5000/api/v1/users/google-login',{accessToken: tokenResponse.access_token}, {withCredentials: true});
+
+        console.log("Login successful:", response.data);
+
+        const user = response.data.user;
+        dispatch(setUser({
+          userId: data.userId,
+          name: data.name,
+          email: data.email,
+          avatar: data.avatar,
+          isAuthentication: true,
+        }));
+        setLoginPopup(false);
+        navigate("/chat")
+      } catch (error) {
+        console.error("Google login error:", error);
+        
+      }
+    },
+    onError: (error) => {
+      console.error("Login Failed:", error);
+    },
+  })
+
   return (
     <div
       className={`min-h-screen ${
@@ -144,7 +177,7 @@ const LandingPage = () => {
             </div>
             <div className="p-5">
               <h1 className="text-xl md:text-[28px] font-semibold">
-                Use your Google Account to sign in to DuoChat
+                Use your Google Account to sign in to Notely
               </h1>
               <div className="flex items-center">
                 <p className="flex-1 text-[14px] md:text-[16px]">
