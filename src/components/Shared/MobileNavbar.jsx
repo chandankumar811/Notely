@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { getThemeClasses } from "../../utils/theme";
 import { MessageSquare, Phone, FileEdit, Settings, User } from "lucide-react";
+import { set } from "mongoose";
 
-const MobileNavbar = ({ setCurrentSideBar, currentSideBar }) => {
+const MobileNavbar = ({
+  setCurrentSideBar,
+  setOpenProfile,
+  activeTab,
+  setActiveTab,
+}) => {
   const { darkMode } = useTheme();
   const themeClasses = getThemeClasses(darkMode);
   const navItems = [
@@ -12,11 +18,30 @@ const MobileNavbar = ({ setCurrentSideBar, currentSideBar }) => {
       icon: MessageSquare,
       label: "Messages",
       path: "chatList",
+      activeTab: "chatTab",
     },
-    { id: "calls", icon: Phone, label: "Calls" },
-    { id: "notes", icon: FileEdit, label: "Notes", path: "noteList" },
-    { id: "settings", icon: Settings, label: "Settings" },
-    { id: "profile", icon: User, label: "Profile" },
+    { id: "calls", icon: Phone, label: "Calls", activeTab: "callTab" },
+    {
+      id: "notes",
+      icon: FileEdit,
+      label: "Notes",
+      path: "noteList",
+      activeTab: "noteTab",
+    },
+    {
+      id: "settings",
+      icon: Settings,
+      label: "Settings",
+      path: "settings",
+      activeTab: "settingsTab",
+    },
+    {
+      id: "profile",
+      icon: User,
+      label: "Profile",
+      path: "profile",
+      activeTab: "profileTab",
+    },
   ];
 
   return (
@@ -30,9 +55,20 @@ const MobileNavbar = ({ setCurrentSideBar, currentSideBar }) => {
             <button
               key={item.path}
               className={`relative flex items-center justify-center p-2 rounded-full ${
-                currentSideBar === item.path ? "bg-blue-500 text-white" : "bg-transparent"
-              } transition-colors duration-300`}
-              onClick={() => setCurrentSideBar(item.path)}
+                activeTab === item.activeTab
+                  ? "bg-blue-500 text-white"
+                  : "bg-transparent"
+              } `}
+              onClick={() => {
+                if (item.path === "profile") {
+                  setOpenProfile(true);
+                  setActiveTab(item.activeTab);
+                } else {
+                  setCurrentSideBar(item.path);
+                  setOpenProfile(false);
+                  setActiveTab(item.activeTab);
+                }
+              }}
             >
               <IconComponent size={25} />
             </button>

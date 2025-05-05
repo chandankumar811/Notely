@@ -5,9 +5,12 @@ import ChatPage from "../pages/ChatPage";
 import NotePage from "../pages/NotePage";
 import { useTheme } from "../../contexts/ThemeContext";
 import MobileNavbar from "../Shared/MobileNavbar";
+import Profile from "../Shared/Profile";
 
 const AppLayout = () => {
   const [currentSideBar, setCurrentSideBar] = useState("chatList");
+  const [openProfile, setOpenProfile] = useState(false);
+  const [activeTab, setActiveTab] = useState("chatTab");
   const { isMobile } = useTheme();
   console.log(currentSideBar, "currentSideBar");
   return (
@@ -18,23 +21,28 @@ const AppLayout = () => {
           isMobile ? "w-full" : ""
         }`}
       >
-        <div className={`w-12 border-r h-full z-10 ${isMobile ? "hidden" : "flex"}`}>
+        <div
+          className={`w-12 border-r h-full z-10 ${
+            isMobile ? "hidden" : "flex"
+          }`}
+        >
           <NavSideBar
             setCurrentSideBar={setCurrentSideBar}
             currentSideBar={currentSideBar}
+            openProfile={openProfile}
+            setOpenProfile={setOpenProfile}
+            setActiveTab={setActiveTab}
           />
         </div>
-        <div className="border-r w-full">
-          <ListSideBar currentSideBar={currentSideBar} />
-        </div>
+        {currentSideBar !== "profile" && (
+          <div className="border-r w-full">
+            <ListSideBar currentSideBar={currentSideBar} />
+          </div>
+        )}
       </div>
-      <div className={` ${
-              isMobile ? "hidden" : "flex"
-            }`}>
+      <div className={` ${isMobile ? "hidden" : "flex"}`}>
         {currentSideBar === "chatList" && (
-          <div
-            className={`ml-[18rem] flex-1 h-screen  flex-col mx-auto`}
-          >
+          <div className={`ml-[18rem] flex-1 h-screen  flex-col mx-auto`}>
             <ChatPage />
           </div>
         )}
@@ -45,14 +53,23 @@ const AppLayout = () => {
         )}
       </div>
       <div
-        className={`fixed bottom-4 left-4 right-4 z-20 ${
+        className={`fixed bottom-4 left-4 right-4 z-50 ${
           isMobile ? "flex" : "hidden"
         }`}
       >
         <MobileNavbar
           setCurrentSideBar={setCurrentSideBar}
-          currentSideBar={currentSideBar}
+          activeTab={activeTab}
+          setOpenProfile={setOpenProfile}
+          setActiveTab={setActiveTab}
         />
+      </div>
+      <div
+        className={`flex justify-center absolute inset-0 w-full h-screen z-30 p-0  ${
+          openProfile ? "fixed" : "hidden"
+        }`}
+      >
+        <Profile setOpenProfile={setOpenProfile} />
       </div>
     </div>
   );

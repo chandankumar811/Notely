@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { set } from "mongoose";
 
 const initialState = {
-  userId: "",
+  uid: "",
   name: "",
   email: "",
   avatar: "",
@@ -10,7 +10,7 @@ const initialState = {
   address: "",
   onlineContacts: [],
   blockedContacts: [],
-  isAuthentication: false,
+  isAuthenticated: false,
 };
 
 export const userSlice = createSlice({
@@ -18,13 +18,13 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.userId = action.payload.userId;
+      state.uid = action.payload.uid;
       state.name = action.payload.name;
       state.email = action.payload.email;
       state.avatar = action.payload.avatar;
       state.phoneNumber = action.payload.phoneNumber;
       state.address = action.payload.address;
-      state.isAuthentication = action.payload.isAuthentication;
+      state.isAuthenticated = action.payload.isAuthentication;
     },
     updateUserPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
@@ -40,7 +40,7 @@ export const userSlice = createSlice({
     },
     removeOnlineContacts: (state, action) => {
       state.onlineContacts.filter(
-        (contact) => contact.userId !== action.payload
+        (contact) => contact.uid !== action.payload
       );
     },
     setBlockedContacts: (state, action) => {
@@ -52,7 +52,7 @@ export const userSlice = createSlice({
         console.log("Blocked Contacts", state.blockedContacts);
       } else {
         state.blockedContacts = state.blockedContacts.filter(
-          (contact) => contact.userId !== action.payload.peer.userId
+          (contact) => contact.uid !== action.payload.peer.uid
         );
         console.log("Unblocked Contacts", state.blockedContacts);
       }
@@ -61,7 +61,7 @@ export const userSlice = createSlice({
       state.socketConnection = action.payload;
     },
     logout: (state) => {
-      state.userId = "";
+      state.uid = "";
       state.name = "";
       state.email = "";
       state.avatar = "";

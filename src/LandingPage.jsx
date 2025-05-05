@@ -16,12 +16,14 @@ import {
   NotebookPen,
 } from "lucide-react";
 import { data, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { setUser } from "./redux/slices/user/userSlice.js";
 
 const LandingPage = () => {
   const { darkMode, toggleTheme } = useTheme();
   const [loginPopup, setLoginPopup] = useState();
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const themeClasses = {
     container: darkMode
@@ -37,29 +39,38 @@ const LandingPage = () => {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const response = await axios.post('http://localhost:5000/api/v1/users/google-login',{accessToken: tokenResponse.access_token}, {withCredentials: true});
+        console.log("Google login token:", tokenResponse);
+
+        const response = await axios.post(
+          "http://localhost:3000/api/v1/users/google-login",
+          { accessToken: tokenResponse.access_token },
+          { withCredentials: true }
+        );
 
         console.log("Login successful:", response.data);
 
         const user = response.data.user;
-        dispatch(setUser({
-          userId: data.userId,
-          name: data.name,
-          email: data.email,
-          avatar: data.avatar,
-          isAuthentication: true,
-        }));
+        dispatch(
+          setUser({
+            uid: user.uid,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            address: user.address,
+            isAuthentication: true,
+          })
+        );
         setLoginPopup(false);
-        navigate("/chat")
+        navigate("/chat");
       } catch (error) {
         console.error("Google login error:", error);
-        
       }
     },
     onError: (error) => {
       console.error("Login Failed:", error);
     },
-  })
+  });
 
   return (
     <div
@@ -76,6 +87,7 @@ const LandingPage = () => {
         </div>
         <nav className="space-x-6 flex items-center mr-4 md:mr-0">
           <button
+            onClick={googleLogin}
             className={`hidden md:flex items-center gap-1 text-gray-800 bg-white px-4 py-2 rounded-4xl font-semibold`}
           >
             <img src={GoogleIcon} alt="G" className="w-5 h-5" />
@@ -102,6 +114,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-5 mt-10">
             <button
+              onClick={googleLogin}
               className={`flex md:hidden items-center gap-1 text-gray-800 bg-white px-4 py-2 rounded-4xl font-semibold`}
             >
               {" "}
@@ -189,6 +202,7 @@ const LandingPage = () => {
                 </div>
               </div>
               <button
+                onClick={googleLogin}
                 className={`w-full mt-6 flex justify-center bg-blue-600 text-white px-4 py-2 rounded-4xl font-semibold`}
               >
                 Continue
