@@ -81,7 +81,7 @@ const ChatHeader = ({isBlocked,hasBlocked,setIsBlockedPopup}) => {
                 )}
                 <div className="relative flex items-center">
                   <div className={`w-10 h-10 rounded-full ${themeClasses.initialBg} flex items-center justify-center font-bold`}>
-                    <img src={selectedChat?.avatar} alt={selectedChat?.name?.charAt(0).toUpperCase()} className='rounded-full'/>
+                    <img src={selectedChat?.avatar} alt={selectedChat?.name?.charAt(0).toUpperCase()} className='w-full h-full object-cover rounded-full'/>
                   </div>
                   {/* <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div> */}
                 </div>

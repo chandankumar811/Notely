@@ -105,7 +105,7 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
             };
 
             fetchContact();
-          }, []); 
+          }, [addNewChatOpen]); 
 
           const searchContact = () =>{
             if(!contactSearchQuery.trim()) {
@@ -199,7 +199,7 @@ const ChatList = ({addContactOpen,setAddContactOpen,searchInputRef,addNewChatOpe
           }
       }
       if (userId) fetchChatList();
-    }, [userId, dispatch]);
+    }, [userId]);
 
     useEffect(()=>{
       socket.on('update-request-list',fetchRequests);

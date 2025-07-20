@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { addMessage, setCallStatus, setSelectedCallReceiver } from '../redux/slices/chat/chatSlice';
+import { addMessage, setCallStatus, setSelectedCallReceiver, updateChatList } from '../redux/slices/chat/chatSlice';
 import { io } from 'socket.io-client';
 import Peer from 'peerjs';
 import { setBlockedContacts, updateBlockedContacts } from '../redux/slices/user/userSlice';
@@ -28,6 +28,12 @@ export const ChatProvider = ({ children }) => {
   const selectedCallReceiver = useSelector(state => state.chat.selectedCallReceiver)
   const callStatus = useSelector(state => state.chat.callStatus)
   const chatList = useSelector(state => state.chat.chatList)
+  const chatListRef = useRef(chatList);
+
+// Always update the ref with latest chatList
+useEffect(() => {
+  chatListRef.current = chatList;
+}, [chatList]);
   const user = useSelector(state => state.user)
   
   const socket = useMemo(() => getSocket(), []);
@@ -104,7 +110,7 @@ export const ChatProvider = ({ children }) => {
           });
           if(response.status === 200){
             dispatch(addMessage({peerId:selectedChat.userId,message:response.data.message,lastMessage:response.data.lastMessage}));
-            socket.emit('new-message',{senderId:user.userId,receiverId:selectedChat.userId,message:response.data.message,lastMessage:response.data.lastMessage})
+            socket.emit('new-message',{sender:user,receiverId:selectedChat.userId,message:response.data.message,lastMessage:response.data.lastMessage})
           }
         }catch(err){
 
@@ -399,8 +405,16 @@ export const ChatProvider = ({ children }) => {
         });
       });
 
-      socket.on("received-message", ({ senderId,message,lastMessage }) => {
-          dispatch(addMessage({peerId:senderId,message,lastMessage}));
+      socket.on("received-message", ({ sender, message,lastMessage }) => {
+        
+        const currentChatList = chatListRef.current;
+        console.log(currentChatList,sender.userId)
+          if(currentChatList.some(chat => chat.peer.userId === sender.userId)){
+            dispatch(addMessage({peerId:sender.userId,message,lastMessage}));
+          }else{
+            dispatch(updateChatList({peer:{userId:sender.userId,name:sender.name,avatar:sender.avatar},lastMessage,upatedAt:message.timestamp}));
+          }
+
         });
       }
       socket.on('update-receiver-media-status',({micStatus,videoStatus})=>{

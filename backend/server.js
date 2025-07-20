@@ -126,18 +126,12 @@ io.on("connection", (socket) => {
       io.to(contactSocketId).emit("update-request-list");
     }
   })
-
-  // socket.on('notify-blocked-user',({userId,peerId,hasBlocked})=>{
-  //   const receiverSocketId = userSocketMap.get(peerId);
-  //   if(receiverSocketId){
-  //     io.to(receiverSocketId).emit('blocked-by-user',{userId,hasBlocked})
-  //   }
-  // })
   
-  socket.on("new-message", ({ senderId, receiverId, message ,lastMessage}) => {
+  socket.on("new-message", ({ sender, receiverId, message ,lastMessage}) => {
     const receiverSocketId = userSocketMap.get(receiverId);
+    console.log(sender, receiverId, message, lastMessage);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("received-message", {senderId, message,lastMessage });
+      io.to(receiverSocketId).emit("received-message", {sender, message,lastMessage });
     }
   });
   
@@ -183,14 +177,6 @@ socket.on('timeout-call', ({receiverId}) => {
   }
 });
 
-// socket.on('update-media-status', (data) => {
-//   // Broadcast media status changes to the other party
-//   socket.to(data.receiverId).emit('update-receiver-media-status', {
-//     micStatus: data.micStatus,
-//     videoStatus: data.videoStatus
-//   });
-// });
-  
   
   // Handle user presence and online status
   socket.on('set-status', ({ userId, status }) => {

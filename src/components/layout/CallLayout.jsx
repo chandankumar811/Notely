@@ -288,7 +288,7 @@ if (callStatus === CALL_STATUS.ONGOING) {
                                 className="w-full h-full object-cover"
                             />
                             {!peerMicStatus && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-5 rounded-full bg-black/30 text-red-400"><MicOff size={20} /></div>}
-                            {!peerVideoStatus && <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-700"><img src={caller.avatar} alt="" className='rounded-full w-1/5 aspect-square'/></div>}
+                            {!peerVideoStatus && <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-700"><img src={caller.avatar} alt="" className='rounded-full object-cover w-1/5 aspect-square'/></div>}
                         </div>
 
                         {/* Local Video (Picture-in-Picture) */}
@@ -306,7 +306,7 @@ if (callStatus === CALL_STATUS.ONGOING) {
                                 ref={localVideoRef}
                                 className="w-full h-full object-cover rounded-lg"
                             />
-                            {!videoStatus && <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-600"><img src={user.avatar} alt="" className='rounded-full w-1/4 aspect-square'/></div>}
+                            {!videoStatus && <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-600"><img src={user.avatar} alt="" className='rounded-full object-cover w-1/4 aspect-square'/></div>}
                         </div>
                     </div>
 

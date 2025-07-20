@@ -39,6 +39,12 @@ export const chatSlice = createSlice({
             chat.lastMessage = action.payload.lastMessage
             chat.updatedAt = action.payload.message.timestamp;
         }
+        // else{
+        //     state.chatList.push({
+        //         peer: {},
+        //         lastMessage: action.payload.lastMessage,
+        //     })
+        // }
         },
         removeMessage: (state, action) => {
         state.messages.filter((message) => message._id !== action.payload);
