@@ -156,7 +156,7 @@ const ChatApp = () => {
           
           {/* Sidebar Header with theme toggle on mobile */}
           <div className="flex items-center justify-between p-4">
-            <h1 className="font-bold text-3xl">DuoChat</h1>
+            <h1 className="font-bold text-3xl">Notely</h1>
             {isMobile && (<div className="flex items-center space-x-4">
               <button 
                 onClick={toggleTheme} 

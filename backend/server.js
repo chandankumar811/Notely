@@ -72,7 +72,9 @@ const deleteAllCallHistory = require('./routes/call/deleteAllCallHistory');
 const path = require('path');
 const authMiddleware = require('./middlewares/authMiddleware');
 
-
+const addNewNote = require('./routes/note/addNewNote');
+const fetchNoteList = require('./routes/note/fetchNoteList');
+const updateNoteList = require('./routes/note/updateNoteProfile');
 
 
 
@@ -105,6 +107,10 @@ app.use('/api/call', storeCallHistory);
 app.use('/api/call', fetchCallHistory);
 app.use('/api/call', deleteCallHistory);
 app.use('/api/call', deleteAllCallHistory);
+
+app.use('/api/note', addNewNote);
+app.use('/api/note', fetchNoteList);
+app.use('/api/note', updateNoteList);
 
 
 

@@ -57,8 +57,8 @@ const LandingPage = () => {
     <div className={`min-h-screen ${themeClasses.container} flex flex-col items-center ${loginPopup ? 'overflow-hidden' : ''}`}>
       <header className={`h-16 mt-6 p-4 md:p-8 flex justify-between items-center w-[90%] md:max-w-6xl rounded-4xl ${themeClasses.navbar}`}>
         <div className="flex items-center space-x-3">
-          <img src={Logo} alt="DuoChat Logo" className="w-8 h-8 md:w-10 md:h-10" />
-          <h1 className="text-xl md:text-3xl font-bold text-white">DuoChat</h1>
+          <img src={Logo} alt="Notely Logo" className="w-8 h-8 md:w-10 md:h-10" />
+          <h1 className="text-xl md:text-3xl font-bold text-white">Notely</h1>
         </div>
         <nav className="space-x-6 flex items-center">
           {/* <Link to='/signup' className={`hidden md:flex flex items-center ${darkMode?'text-gray-300 hover:text-white':'text-white'} px-4 py-1 font-semibold`}>Sign Up</Link> */}
@@ -75,7 +75,7 @@ const LandingPage = () => {
       <section className="flex flex-col items-center justify-center text-center px-6 mt-20">
         <h2 className="text-5xl font-bold mb-4">Fast, Secure & Intuitive Messaging</h2>
         <p className="text-gray-400 max-w-2xl mb-6">
-          Connect with friends and colleagues instantly using DuoChat. Experience real-time chat, seamless UI, and powerful features, all in one place.
+          Connect with friends and colleagues instantly using Notely. Experience real-time chat, seamless UI, and powerful features, all in one place.
         </p>
         <div className="flex flex-wrap justify-center gap-5 mt-10">
             {/* <Link to='/signup' className={`flex md:hidden ${darkMode?'border-2 border-white':'border-2 border-blue-600 text-blue-600'} px-6 py-2 rounded-4xl font-semibold`}>Sign Up</Link> */}
@@ -122,10 +122,10 @@ const LandingPage = () => {
                   <button className="text-gray-700 hover:bg-black/5 p-1 rounded-full" onClick={()=>setLoginPopup(false)}><X size={20} /></button>
               </div>
               <div className="p-5">
-                <h1 className="text-xl md:text-[28px] font-semibold">Use your Google Account to sign in to DuoChat</h1>
+                <h1 className="text-xl md:text-[28px] font-semibold">Use your Google Account to sign in to Notely</h1>
                 <div className="flex items-center">
                   <p className="flex-1 text-[14px] md:text-[16px]">No more passwords to remember. Signing in is fast, simple and secure.</p>
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-500 p-3 rounded-full"><img src={Logo} alt="DuoChat" className="w-full h-full" /></div>
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-500 p-3 rounded-full"><img src={Logo} alt="Notely" className="w-full h-full" /></div>
                 </div>
                 <button onClick={googleLogin} className={`w-full mt-6 flex justify-center bg-blue-600 text-white px-4 py-2 rounded-4xl font-semibold`}>Continue</button>
               </div>

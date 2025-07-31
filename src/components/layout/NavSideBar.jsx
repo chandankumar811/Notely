@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageCircle, Phone, Star, Settings, User, MessageSquareText, Moon, Sun, UserRound, LogOut } from 'lucide-react';
+import { MessageCircle, Phone, Star, Settings, User, MessageSquareText, Moon, Sun, UserRound, LogOut, NotebookPen, NotepadTextDashed, NotepadText } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getThemeClasses } from '../../utils/theme';
 import Logo from '../../assets/LOGO.png';
@@ -41,9 +41,9 @@ const NavSidebar = ({setCurrentSideBar,currentSideBar}) => {
   return (
     <div className={`hidden md:flex w-16 flex-shrink-0 border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex-col items-center py-4 ${themeClasses.navSidebar}`}>
       {/* App logo */}
-      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-8">
+      <div className="w-12 h-12 rounded-full flex items-center justify-center mb-8">
         <div className="text-white text-xl">
-          <img src={Logo} alt="DC" className='w-7 h-7'/>
+          <img src={Logo} alt="DC" className='w-full h-full rounded-full object-center'/>
         </div>
       </div>
       
@@ -54,6 +54,9 @@ const NavSidebar = ({setCurrentSideBar,currentSideBar}) => {
         </button>
         <button onClick={()=>setCurrentSideBar('callHistory')} className={`p-2 rounded-full ${currentSideBar==='callHistory'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Phone size={24} />
+        </button>
+        <button onClick={()=>setCurrentSideBar('noteList')} className={`p-2 rounded-full ${currentSideBar==='noteList'?themeClasses.navIconActive:themeClasses.navIcon}`}>
+          <NotepadText size={24} />
         </button>
         <button onClick={()=>setCurrentSideBar('starChats')} className={`p-2 rounded-full ${currentSideBar==='starChats'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Star size={24} />

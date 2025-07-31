@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, MessageCircle, MessageSquareText, Phone, Star, User, UserRound } from 'lucide-react';
+import { LogOut, MessageCircle, MessageSquareText, NotebookPen, Phone, Star, User, UserRound } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getThemeClasses } from '../../utils/theme';
 import { useDispatch,useSelector } from 'react-redux';
@@ -32,6 +32,9 @@ const MobileNavBar = ({currentSideBar,setCurrentSideBar}) => {
         </button>
         <button onClick={()=>{setCurrentSideBar('callHistory');dispatch(setSelectedChat(null))}} className={`p-2 rounded-full ${currentSideBar==='callHistory'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Phone size={24} />
+        </button>
+        <button className={`p-2 rounded-full ${currentSideBar==='noteList'? themeClasses.navIconActive:themeClasses.navIcon}`} onClick={()=>setCurrentSideBar('noteList')}>
+          <NotebookPen size={24}/>
         </button>
         <button onClick={()=>setCurrentSideBar('starChats')} className={`p-2 rounded-full ${currentSideBar==='starChats'?themeClasses.navIconActive:themeClasses.navIcon}`}>
           <Star size={24} />

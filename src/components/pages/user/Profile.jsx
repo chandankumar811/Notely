@@ -162,7 +162,7 @@ const Profile = ({setCurrentSideBar}) => {
   return (
     <div className={`flex flex-col items-center h-[calc(100vh-60px)] sm:h-screen`}>        
       <div className={`w-full px-5 py-3 flex items-center gap-3 border-b ${themeClasses.chatHeader}`}>
-        <button onClick={()=>setCurrentSideBar('chatList')} className={`p-2 rounded-full ${darkMode?'hover:bg-gray-700':'hover:bg-gray-200'}`}><X size={24} /></button>
+        <button onClick={()=>setCurrentSideBar('noteList')} className={`p-2 rounded-full ${darkMode?'hover:bg-gray-700':'hover:bg-gray-200'}`}><X size={24} /></button>
         <h1 className="text-xl font-semibold">Profile</h1>
       </div>
 
