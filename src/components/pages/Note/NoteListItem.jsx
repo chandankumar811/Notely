@@ -14,7 +14,7 @@ const NoteListItem = ({ note, selectNote }) => {
 const dispatch = useDispatch();
 // const selectedNote = useSelector(state => state.note.selectedNote);
 
-// console.log("SelectedNote: -", note);
+console.log("SelectedNote: -", note);
 
   return (
     <div>
@@ -23,9 +23,10 @@ const dispatch = useDispatch();
           <div
             className={`w-12 h-12 rounded-full ${themeClasses.contactInitialBg} flex items-center justify-center font-bold`}
           >
+            {console.log("Note Avatar: ", note.avatar)}
             <img
-              src="./LOGO.png"
-              alt=""
+              src={`${note.avatar}`}
+              alt="avatar"
               className="w-full h-full object-cover rounded-full"
             />
           </div>

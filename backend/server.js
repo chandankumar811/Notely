@@ -75,6 +75,7 @@ const authMiddleware = require('./middlewares/authMiddleware');
 const addNewNote = require('./routes/note/addNewNote');
 const fetchNoteList = require('./routes/note/fetchNoteList');
 const updateNoteList = require('./routes/note/updateNoteProfile');
+const updateNoteAvatar = require('./routes/note/updateNoteAvatar');
 
 
 
@@ -111,6 +112,7 @@ app.use('/api/call', deleteAllCallHistory);
 app.use('/api/note', addNewNote);
 app.use('/api/note', fetchNoteList);
 app.use('/api/note', updateNoteList);
+app.use('/api/note', updateNoteAvatar);
 
 
 

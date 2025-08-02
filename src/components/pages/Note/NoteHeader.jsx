@@ -45,7 +45,7 @@ const NoteHeader = () => {
           <div>
             <div className={`w-12 h-12 flex items-center justify-center font-bold`}>
               <img
-                src="./LOGO.png"
+                src={selectedNote?.avatar}
                 alt=""
                 className="w-full h-full object-cover rounded-full"
               />

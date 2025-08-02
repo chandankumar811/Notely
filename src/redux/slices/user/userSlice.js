@@ -29,7 +29,7 @@ export const userSlice = createSlice({
           state.avatar=action.payload;
         },
         updateUserPhoneNumber: (state,action) =>{
-          state.phoneNumbero=action.payload;
+          state.phoneNumber=action.payload;
         },
         updateUserAddress: (state,action) =>{
           state.address=action.payload;

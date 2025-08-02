@@ -39,6 +39,8 @@ export const noteSlice = createSlice({
         (note) => note.peer.userId !== action.payload
       );
     },
+
+     
   },
 });
 
