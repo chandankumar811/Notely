@@ -14,6 +14,7 @@ const generateRandomString = (length) => {
 router.post("/new-note", async(req, res) => {
     try {
         const {creatorId, title, participant, } = req.body;
+        console.log(participant)
         if (!creatorId || !title) {
             return res.status(400).json({message: "Creator ID and title are required"});
         }

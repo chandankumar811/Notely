@@ -24,14 +24,14 @@ const EditNoteProfile = () => {
   const dispatch = useDispatch();
 
   const [previewURL, setPreviewURL] = useState("");
-    const [showAvatarModal, setShowAvatarModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [uploading, setUploading] = useState(false);
-    const fileInputRef = useRef(null);
-    const phoneInputRef = useRef(null);
-    const addressInputRef = useRef(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
+  const addressInputRef = useRef(null);
 
-    // console.log("note Avatar:", noteAvatar.avatar)
+  // console.log("note Avatar:", noteAvatar.avatar)
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -60,6 +60,7 @@ const EditNoteProfile = () => {
         const id = p.userId.userId || p.userId;
         privilegeMap[id] = p.privilege;
       });
+      console.log(selectedIds);
       setSelectedContacts(selectedIds);
       setPrivilege(privilegeMap);
     }
@@ -86,16 +87,28 @@ const EditNoteProfile = () => {
 
   const handleUpdateNote = async () => {
     try {
+      console.log("Selected Contacts:", selectedContacts);
+      console.log("Contact Result:", contactResult);
+
       const response = await axios.put(
         `http://localhost:5000/api/note/update-note-profile/${selectedNote.noteId}`,
         {
           title,
-          participant: selectedContacts.map((id) => ({
-            userId: id,
-            name: contactResult.find((contact) => contact._id === id).name,
-            avatar: contactResult.find((contact) => contact._id === id).avatar,
-            privilege: privilege[id] || "read",
-          })),
+          participant: selectedContacts
+            .map((id) => {
+              const contact = contactResult.find((c) => c.userId === id);
+              if (!contact) {
+                console.warn(`No contact found for userId: ${id}`);
+                return null; // Skip this contact if not found
+              }
+              return {
+                userId: id,
+                name: contact.name,
+                avatar: contact.avatar,
+                privilege: privilege[id] || "read",
+              };
+            })
+            .filter(Boolean), // Removes nulls from the array
         }
       );
       if (response.status === 200) {
@@ -114,12 +127,11 @@ const EditNoteProfile = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if(file) {
+    if (file) {
       setSelectedImage(file);
       setPreviewURL(URL.createObjectURL(file));
     }
-  }
-
+  };
 
   const handleAvatarUpload = async () => {
     if (!selectedImage) return;
@@ -130,8 +142,8 @@ const EditNoteProfile = () => {
     formData.append("noteId", selectedNote._id);
 
     for (let pair of formData.entries()) {
-    console.log(`${pair[0]}:`, pair[1]);
-  }
+      console.log(`${pair[0]}:`, pair[1]);
+    }
 
     try {
       const response = await axios.post(
@@ -143,27 +155,26 @@ const EditNoteProfile = () => {
           },
         }
       );
-      console.log('avatar:', response.data.note.avatar)
+      console.log("avatar:", response.data.note.avatar);
       if (response.status === 200) {
         dispatch(setSelectedNote(response.data.note));
         dispatch(updateNoteProfile(response.data.note));
         setSelectedImage(null);
-        setPreviewURL('');
+        setPreviewURL("");
         setShowAvatarModal(false);
       }
-      
     } catch (error) {
       console.error("Error uploading avatar:", error);
     } finally {
       setUploading(false);
     }
-  }
+  };
 
   const handleCancelUpload = () => {
     setSelectedImage(null);
-    setPreviewURL('');
+    setPreviewURL("");
     setShowAvatarModal(false);
-  }
+  };
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center">
@@ -191,7 +202,10 @@ const EditNoteProfile = () => {
               className={`flex items-center justify-center relative w-48 h-48 rounded-full p-1 bg-blue-100 overflow-hidden`}
             >
               <img src={selectedNote.avatar} alt="" />
-              <button onClick={() => setShowAvatarModal(true)} className="absolute w-full h-8 right-0 bottom-0 bg-black/50 flex justify-center items-center text-gray-200">
+              <button
+                onClick={() => setShowAvatarModal(true)}
+                className="absolute w-full h-8 right-0 bottom-0 bg-black/50 flex justify-center items-center text-gray-200"
+              >
                 <Pencil size={20} />
               </button>
             </div>
@@ -299,46 +313,79 @@ const EditNoteProfile = () => {
       </div>
       {showAvatarModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-        <div
-          className={`w-[90%] max-w-md p-6 rounded-lg ${
-            darkMode ? "bg-gray-800" : "bg-white"
-          } shadow-lg`}
-        >
-          <h2 className="text-xl font-semibold mb-4">
-            Update Your Note Avatar
-          </h2>
+          <div
+            className={`w-[90%] max-w-md p-6 rounded-lg ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            } shadow-lg`}
+          >
+            <h2 className="text-xl font-semibold mb-4">
+              Update Your Note Avatar
+            </h2>
 
-          <div className="mb-4">
-            {previewURL ? (
-              <div className="relative w-40 h-40 mx-auto">
-                <img
-                  src={previewURL}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-full"
-                />
-                <button onClick={() => {
-                  setPreviewURL("");
-                  setSelectedImage(null);
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }} className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1">
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="relative flex flex-col items-center justify-center p-4 border-2 border-gray-500 border-dashed rounded-lg">
-                <Upload size={32} className={`mb-2 ${darkMode ? 'text-gray-400':'text-gray-600'}`}/>
-                <p className="text-sm text-center">Click to select avatar image.</p>
-                <input onChange={handleImageChange} type="file" accept="image/*" className="absolute w-full h-full opacity-0 cursor-pointer"/>
-              </div>
-            )}
-          </div>
+            <div className="mb-4">
+              {previewURL ? (
+                <div className="relative w-40 h-40 mx-auto">
+                  <img
+                    src={previewURL}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                  <button
+                    onClick={() => {
+                      setPreviewURL("");
+                      setSelectedImage(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative flex flex-col items-center justify-center p-4 border-2 border-gray-500 border-dashed rounded-lg">
+                  <Upload
+                    size={32}
+                    className={`mb-2 ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  />
+                  <p className="text-sm text-center">
+                    Click to select avatar image.
+                  </p>
+                  <input
+                    onChange={handleImageChange}
+                    type="file"
+                    accept="image/*"
+                    className="absolute w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
 
-          <div className="flex justify-end gap-2 mt-4">
-            <button onClick={handleCancelUpload} className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-700 hover:bg-gray-600': 'bg-gray-200 hover:bg-gray-300'}`}>Cancel</button>
-            <button onClick={handleAvatarUpload} disabled={!selectedImage || uploading} className={`px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 ${(!selectedImage || uploading) && 'opacity-50 cursor-not-allowed'}`}>{uploading ? 'uploading...' : 'Update'}</button>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={handleCancelUpload}
+                className={`px-4 py-2 rounded-md ${
+                  darkMode
+                    ? "bg-gray-700 hover:bg-gray-600"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAvatarUpload}
+                disabled={!selectedImage || uploading}
+                className={`px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 ${
+                  (!selectedImage || uploading) &&
+                  "opacity-50 cursor-not-allowed"
+                }`}
+              >
+                {uploading ? "uploading..." : "Update"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       )}
     </div>
   );

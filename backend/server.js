@@ -76,6 +76,9 @@ const addNewNote = require('./routes/note/addNewNote');
 const fetchNoteList = require('./routes/note/fetchNoteList');
 const updateNoteList = require('./routes/note/updateNoteProfile');
 const updateNoteAvatar = require('./routes/note/updateNoteAvatar');
+const deleteNote = require('./routes/note/deleteNote');
+const leaveNote = require('./routes/note/leaveNote');
+const deleteNoteByParticipant = require('./routes/note/deleteNoteByParticipant');
 
 
 
@@ -113,18 +116,20 @@ app.use('/api/note', addNewNote);
 app.use('/api/note', fetchNoteList);
 app.use('/api/note', updateNoteList);
 app.use('/api/note', updateNoteAvatar);
-
+app.use('/api/note', deleteNote);
+app.use('/api/note', leaveNote);
+app.use('/api/note', deleteNoteByParticipant);
 
 
 // Socket.io server setup
 const userSocketMap = new Map();
 // Socket.io Connection
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id);
   
   socket.on('map-userId', (userId) => {
     userSocketMap.set(userId, socket.id);
-    console.log("User mapped:", userId, "to socket:", socket.id);
+    // console.log("User mapped:", userId, "to socket:", socket.id);
   });
 
   socket.on('update-request-list',({contactId})=>{

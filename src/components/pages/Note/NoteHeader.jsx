@@ -1,11 +1,17 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { getThemeClasses } from "../../../utils/theme";
-import { ArrowLeft, Trash2, EllipsisVerticalIcon, Menu, Pencil, X } from "lucide-react";
-import { setSelectedChat } from "../../../redux/slices/chat/chatSlice";
-import { setSelectedNote } from "../../../redux/slices/note/noteSlice";
+import {
+  ArrowLeft,
+  Trash2,
+  EllipsisVerticalIcon,
+  Pencil,
+  X,
+} from "lucide-react";
+import { deleteNoteItem, setSelectedNote } from "../../../redux/slices/note/noteSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNote } from "../../../contexts/NoteContext";
+import axios from "axios";
 
 const NoteHeader = () => {
   const { darkMode, isMobile } = useTheme();
@@ -13,13 +19,16 @@ const NoteHeader = () => {
   const dispatch = useDispatch();
   const [isNoteOption, setIsNoteOption] = useState(false);
   const noteOptionRef = useRef(null);
-  const {selectedNote} = useSelector((state) => state.note);
-  const {setEditNoteProfileOpen} = useNote();
-  // console.log("Selected Note in Header: ", selectedNote);
+  const { selectedNote } = useSelector((state) => state.note);
+  const { userId } = useSelector((state) => state.user);
+  const { setEditNoteProfileOpen } = useNote();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (noteOptionRef.current && !noteOptionRef.current.contains(event.target)) {
+      if (
+        noteOptionRef.current &&
+        !noteOptionRef.current.contains(event.target)
+      ) {
         setIsNoteOption(false);
       }
     };
@@ -31,8 +40,49 @@ const NoteHeader = () => {
     };
   }, []);
 
-  return ( 
-    <div ref={noteOptionRef} className={`flex items-center justify-between p-4 relative ${themeClasses.chatHeader} `}
+  const handleLeaveNote = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/note/leave-note/${selectedNote.noteId}/${userId}`
+      );
+      if (response.status === 200) {
+        console.console.log("Note leaved successfully");
+      }
+    } catch (error) {
+      console.error("Error to leave note", error);
+    }
+  };
+
+  const handleDeleteNoteByParticipant = async () => {
+    try {
+      const response = await axios.delete( `http://localhost:5000/api/note/delete-note-by-participant/${selectedNote.noteId}/${userId}`);
+
+      if(response.status === 200){
+        dispatch(deleteNoteItem(note.noteId))
+        console.log('Note deleted successfully by participants');
+      }
+    } catch (error) {
+      console.error('Error to delete note by participant')
+    }
+  }
+
+  const handleDeleteNote = async () => {
+    try {
+      const response = await axios.delete( `http://localhost:5000/api/note/delete-note/${selectedNote.noteId}`);
+
+      if(response.status === 200){
+        dispatch(deleteNoteItem(note.noteId))
+        console.log('Note deleted successfully by creator');
+      }
+    } catch (error) {
+      console.error('Error to delete note by participant')
+    }
+  }
+
+  return (
+    <div
+      ref={noteOptionRef}
+      className={`flex items-center justify-between p-4 relative ${themeClasses.chatHeader} `}
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
@@ -43,7 +93,9 @@ const NoteHeader = () => {
             <ArrowLeft />
           </button>
           <div>
-            <div className={`w-12 h-12 flex items-center justify-center font-bold`}>
+            <div
+              className={`w-12 h-12 flex items-center justify-center font-bold`}
+            >
               <img
                 src={selectedNote?.avatar}
                 alt=""
@@ -51,18 +103,69 @@ const NoteHeader = () => {
               />
             </div>
           </div>
-           <h1 className="text-2xl font-semibold">{selectedNote.title}</h1>
+          <h1 className="text-2xl font-semibold">{selectedNote.title}</h1>
         </div>
-        <button onClick={() => setIsNoteOption(prev => !prev)} className={`p-2 rounded-full ${darkMode ? `${isNoteOption && 'bg-gray-700'} hover:bg-gray-700` : `${isNoteOption && 'bg-gray-200'} hover:bg-gray-200`}`}>
-          <EllipsisVerticalIcon size={22}  className={themeClasses.headerIcon}/>
+        <button
+          onClick={() => setIsNoteOption((prev) => !prev)}
+          className={`p-2 rounded-full ${
+            darkMode
+              ? `${isNoteOption && "bg-gray-700"} hover:bg-gray-700`
+              : `${isNoteOption && "bg-gray-200"} hover:bg-gray-200`
+          }`}
+        >
+          <EllipsisVerticalIcon size={22} className={themeClasses.headerIcon} />
         </button>
       </div>
       {isNoteOption && (
-        <div className={`absolute z-10 right-0 top-[100%] p-2 flex flex-col ${themeClasses.chatHeader} shadow-md border rounded-md w-max`}>
-        <button onClick={() => dispatch(setSelectedNote(null))} className={`flex items-center gap-2 px-2 py-1 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-md`}><X size={18}/>Close note</button>
-        <button onClick={() => setEditNoteProfileOpen(true)} className={`flex items-center gap-2 px-2 py-1 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-md`}><Pencil size={18}/>Edit note profile</button>
-        <button className={`flex items-center gap-2 px-2 py-1 ${darkMode?'hover:bg-gray-700':'hover:bg-gray-100'} rounded-md text-red-500`}><Trash2 size={18}/>Delete Chat</button>
-      </div>
+        <div
+          className={`absolute z-10 right-0 top-[100%] p-2 flex flex-col ${themeClasses.chatHeader} shadow-md border rounded-md w-max`}
+        >
+          <button
+            onClick={() => dispatch(setSelectedNote(null))}
+            className={`flex items-center gap-2 px-2 py-1 ${
+              darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+            } rounded-md`}
+          >
+            <X size={18} />
+            Close note
+          </button>
+          {(selectedNote.creatorId === userId ||
+            selectedNote.participants?.some(
+              (p) => p.userId === userId && p.privilege === "write"
+            )) && (
+            <button
+              onClick={() => setEditNoteProfileOpen(true)}
+              className={`flex items-center gap-2 px-2 py-1 ${
+                darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              } rounded-md`}
+            >
+              <Pencil size={18} /> Edit note profile
+            </button>
+          )}
+          <button
+            onClick={
+              selectedNote.creatorId === userId
+                ? handleDeleteNote
+                : selectedNote.participants?.some((p) => p.userId === userId)
+                ? handleLeaveNote
+                : selectedNote.leavedBy?.some((l) => l.userId === userId)
+                ? handleDeleteNoteByParticipant
+                : undefined
+            }
+            className={`flex items-center gap-2 px-2 py-1 ${
+              darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+            } rounded-md text-red-500`}
+          >
+            <Trash2 size={18} />
+            {selectedNote.creatorId === userId
+              ? "Delete Note"
+              : selectedNote.participants?.some((p) => p.userId === userId)
+              ? "Leave Note"
+              : selectedNote.leavedBy?.some((l) => l.userId === userId)
+              ? "Delete Note"
+              : ""}
+          </button>
+        </div>
       )}
     </div>
   );

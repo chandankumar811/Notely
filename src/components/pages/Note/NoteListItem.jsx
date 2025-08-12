@@ -4,21 +4,48 @@ import { getThemeClasses } from "../../../utils/theme";
 import { Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNote } from "../../../contexts/NoteContext";
+import { deleteNoteItem } from "../../../redux/slices/note/noteSlice";
+import axios from "axios";
 
 const NoteListItem = ({ note, selectNote }) => {
   const { darkMode } = useTheme();
   const themeClasses = getThemeClasses(darkMode);
-  const {setEditNoteProfileOpen} = useNote();
-  const selectedNote = useSelector(state => state.note);
-//   console.log(note.id);
-const dispatch = useDispatch();
-// const selectedNote = useSelector(state => state.note.selectedNote);
+  const { setEditNoteProfileOpen } = useNote();
+  const selectedNote = useSelector((state) => state.note);
+  const {userId} = useSelector((state) => state.user)
+  //   console.log(note.id);
+  const dispatch = useDispatch();
+  // const selectedNote = useSelector(state => state.note.selectedNote);
 
-console.log("SelectedNote: -", note);
+  const handleDeleteNote = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/note/delete-note/${note.noteId}`
+      );
+
+      if (response.status === 200) {
+        dispatch(deleteNoteItem(note.noteId))
+        console.log("Note deleted successfully");
+      }
+    } catch (error) {
+      console.error("Error to delete note", error);
+    }
+  };
+
+  console.log("SelectedNote: -", note);
 
   return (
     <div>
-      <div key={note.noteId} className={`relative flex items-center p-4 cursor-pointer ${selectNote?.noteId === note.noteId ? themeClasses.chatContactActive : themeClasses.chatContact}`} onClick={() => (selectNote(note), setEditNoteProfileOpen(false))}>
+      <div
+        key={note.noteId}
+        className={`relative flex items-center p-4 cursor-pointer ${
+          selectNote?.noteId === note.noteId
+            ? themeClasses.chatContactActive
+            : themeClasses.chatContact
+        }`}
+        onClick={() => (selectNote(note), setEditNoteProfileOpen(false))}
+      >
         <div className="relative">
           <div
             className={`w-12 h-12 rounded-full ${themeClasses.contactInitialBg} flex items-center justify-center font-bold`}
@@ -47,13 +74,16 @@ console.log("SelectedNote: -", note);
               Date
             </span>
             <div>
+              {note.creatorId === userId && (
               <button
+                onClick={handleDeleteNote }
                 className={`p-2 ${
                   darkMode ? "bg-black/20" : "bg-black/5"
                 } rounded-full text-red-400`}
               >
                 <Trash2 size={14} />
               </button>
+              )}
             </div>
           </div>
         </div>

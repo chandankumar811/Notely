@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Profile from "../user/profile";
 import NoteHeader from "../Note/NoteHeader";
-import AddNewChat from "../Note/AddNewChat";
+import AddNewNote from "../Note/AddNewNote";
 import { useNote } from "../../../contexts/NoteContext";
 import EditNoteProfile from "../Note/EditNoteProfile";
 
@@ -429,6 +429,10 @@ const ChatArea = ({ currentSideBar, setCurrentSideBar }) => {
             } relative flex-1 flex flex-col h-full`}
           >
             <NoteHeader />
+
+          <div className={`flex-1 p-4 overflow-y-auto custom-scrollbar ${themeClasses.chatArea}`}>
+            <textarea name="" id="" className={`w-full h-full outline-none ${themeClasses.messageInput} p-2`}></textarea>
+          </div>
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center h-full">
@@ -440,7 +444,7 @@ const ChatArea = ({ currentSideBar, setCurrentSideBar }) => {
 
          {addNewNoteOpen && (
           <div className="">
-            <AddNewChat/>
+            <AddNewNote/>
           </div>
          )}
 

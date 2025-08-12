@@ -7,7 +7,7 @@ import axios from "axios";
 import { useNote } from "../../../contexts/NoteContext";
 import { updateNoteList } from "../../../redux/slices/note/noteSlice";
 
-const AddNewChat = () => {
+const AddNewNote = () => {
   const { darkMode } = useTheme();
   const themeClasses = getThemeClasses(darkMode);
   const user = useSelector((state) => state.user);
@@ -27,7 +27,7 @@ const AddNewChat = () => {
           creatorId: user.userId,
           title,
           participant: selectedContact.map((id) => ({
-            userId: id,
+            userId: contactResult.find((contact) => contact._id === id).userId,
             name: contactResult.find((contact) => contact._id === id).name,
             avatar: contactResult.find((contact) => contact._id === id).avatar,
             privilege: privilege[id] || "read",
@@ -182,4 +182,4 @@ const AddNewChat = () => {
   );
 };
 
-export default AddNewChat;
+export default AddNewNote;

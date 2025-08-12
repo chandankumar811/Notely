@@ -34,11 +34,9 @@ export const noteSlice = createSlice({
       
     },
 
-    updateDeletionNoteList: (state, action) => {
-      state.noteList = state.noteList.filter(
-        (note) => note.peer.userId !== action.payload
-      );
-    },
+     deleteNoteItem: (state, action) => {
+      state.noteList = state.noteList.filter(note => note.noteId !== action.payload);
+     }
 
      
   },
@@ -47,8 +45,8 @@ export const noteSlice = createSlice({
 export const {
   setNoteList,
   setSelectedNote,
-  updateDeletionNoteList,
   updateNoteList,
+  deleteNoteItem,
   updateNoteProfile,
 } = noteSlice.actions;
 
