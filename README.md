@@ -35,6 +35,7 @@ ChatHub is built using the following technologies:
 | Redux | State management library for managing application state |
 | Node.js | Backend runtime environment for building the server-side logic |
 | Express.js | Server-side framework for building the API |
+|Web Socket | Real time chatting and note taking |
 | MongoDB | NoSQL database for storing data |
 | Tailwind CSS | Utility-first CSS framework for styling the application |
 
