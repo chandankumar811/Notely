@@ -8,7 +8,10 @@ import {
   Pencil,
   X,
 } from "lucide-react";
-import { deleteNoteItem, setSelectedNote } from "../../../redux/slices/note/noteSlice";
+import {
+  deleteNoteItem,
+  setSelectedNote,
+} from "../../../redux/slices/note/noteSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNote } from "../../../contexts/NoteContext";
 import axios from "axios";
@@ -39,45 +42,42 @@ const NoteHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const handleLeaveNote = async () => {
-    try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/note/leave-note/${selectedNote.noteId}/${userId}`
-      );
-      if (response.status === 200) {
-        console.console.log("Note leaved successfully");
-      }
-    } catch (error) {
-      console.error("Error to leave note", error);
-    }
-  };
+ 
 
   const handleDeleteNoteByParticipant = async () => {
     try {
-      const response = await axios.delete( `http://localhost:5000/api/note/delete-note-by-participant/${selectedNote.noteId}/${userId}`);
+      const response = await axios.delete(
+        `http://localhost:5000/api/note/delete-note-by-participant/${selectedNote.noteId}/${userId}`
+      );
 
-      if(response.status === 200){
-        dispatch(deleteNoteItem(note.noteId))
-        console.log('Note deleted successfully by participants');
+
+      if (response.status === 200) {
+        dispatch(deleteNoteItem(selectedNote.noteId));
+        dispatch(setSelectedNote(null))
+        console.log("Note deleted successfully by participants");
       }
     } catch (error) {
-      console.error('Error to delete note by participant')
+      console.error("Error to delete note by participant");
     }
-  }
+  };
 
   const handleDeleteNote = async () => {
     try {
-      const response = await axios.delete( `http://localhost:5000/api/note/delete-note/${selectedNote.noteId}`);
+      const response = await axios.delete(
+        `http://localhost:5000/api/note/delete-note/${selectedNote.noteId}`
+      );
 
-      if(response.status === 200){
-        dispatch(deleteNoteItem(note.noteId))
-        console.log('Note deleted successfully by creator');
+
+
+      if (response.status === 200) {
+        dispatch(deleteNoteItem(selectedNote.noteId));
+        dispatch(setSelectedNote(null));
+        console.log("Note deleted successfully by creator");
       }
     } catch (error) {
-      console.error('Error to delete note by participant')
+      console.error("Error to delete note by creator");
     }
-  }
+  };
 
   return (
     <div
@@ -146,11 +146,7 @@ const NoteHeader = () => {
             onClick={
               selectedNote.creatorId === userId
                 ? handleDeleteNote
-                : selectedNote.participants?.some((p) => p.userId === userId)
-                ? handleLeaveNote
-                : selectedNote.leavedBy?.some((l) => l.userId === userId)
-                ? handleDeleteNoteByParticipant
-                : undefined
+                : handleDeleteNoteByParticipant
             }
             className={`flex items-center gap-2 px-2 py-1 ${
               darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
@@ -159,11 +155,7 @@ const NoteHeader = () => {
             <Trash2 size={18} />
             {selectedNote.creatorId === userId
               ? "Delete Note"
-              : selectedNote.participants?.some((p) => p.userId === userId)
-              ? "Leave Note"
-              : selectedNote.leavedBy?.some((l) => l.userId === userId)
-              ? "Delete Note"
-              : ""}
+              : "Leave Note"}
           </button>
         </div>
       )}

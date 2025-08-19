@@ -4,7 +4,10 @@ import { getThemeClasses } from "../../../utils/theme";
 import { Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNote } from "../../../contexts/NoteContext";
-import { deleteNoteItem } from "../../../redux/slices/note/noteSlice";
+import {
+  deleteNoteItem,
+  setSelectedNote,
+} from "../../../redux/slices/note/noteSlice";
 import axios from "axios";
 
 const NoteListItem = ({ note, selectNote }) => {
@@ -12,26 +15,10 @@ const NoteListItem = ({ note, selectNote }) => {
   const themeClasses = getThemeClasses(darkMode);
   const { setEditNoteProfileOpen } = useNote();
   const selectedNote = useSelector((state) => state.note);
-  const {userId} = useSelector((state) => state.user)
+  const { userId } = useSelector((state) => state.user);
   //   console.log(note.id);
   const dispatch = useDispatch();
   // const selectedNote = useSelector(state => state.note.selectedNote);
-
-  const handleDeleteNote = async (e) => {
-    e.stopPropagation();
-    try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/note/delete-note/${note.noteId}`
-      );
-
-      if (response.status === 200) {
-        dispatch(deleteNoteItem(note.noteId))
-        console.log("Note deleted successfully");
-      }
-    } catch (error) {
-      console.error("Error to delete note", error);
-    }
-  };
 
   console.log("SelectedNote: -", note);
 
@@ -71,20 +58,12 @@ const NoteListItem = ({ note, selectNote }) => {
 
           <div className="flex justify-between items-center gap-2">
             <span className={`text-[9px] ${themeClasses.contactStatusText}`}>
-              Date
+              {new Date(note.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </span>
-            <div>
-              {note.creatorId === userId && (
-              <button
-                onClick={handleDeleteNote }
-                className={`p-2 ${
-                  darkMode ? "bg-black/20" : "bg-black/5"
-                } rounded-full text-red-400`}
-              >
-                <Trash2 size={14} />
-              </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
